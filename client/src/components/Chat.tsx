@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { io } from "socket.io-client";
 import { Send, User } from "lucide-react";
 
@@ -11,18 +11,29 @@ const Chat: React.FC = () => {
   const [username, setUsername] = useState<string>("User" + Math.floor(Math.random() * 1000));
 
   useEffect(() => {
-    socket.emit("join", { username });
+    const queryParams = new URLSearchParams(window.location.search);
+    const roomParam = queryParams.get("room");
+    const usernameParam = queryParams.get("username");
 
-    socket.on("message", (newMessage) => {
-      setMessages((prev) => [...prev, newMessage]);
-    });
-
-    return () => {
-      socket.off("message");
-    };
+    if (roomParam) setRoom(roomParam);
+    if (usernameParam) setUsername(usernameParam);
   }, []);
 
-  const sendMessage = () => {
+  useEffect(() => {
+    socket.emit("join", { username });
+
+    const handleMessage = (newMessage: { text: string; user: string }) => {
+      setMessages((prev) => [...prev, newMessage]);
+    };
+
+    socket.on("message", handleMessage);
+
+    return () => {
+      socket.off("message", handleMessage);
+    };
+  }, [username]);
+
+  const sendMessage = useCallback(() => {
     if (message.trim()) {
       socket.emit("sendMessage", {
         user: username,
@@ -30,14 +41,17 @@ const Chat: React.FC = () => {
       });
       setMessage("");
     }
-  };
+  }, [message, username]);
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  };
+  const handleKeyPress = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    },
+    [sendMessage]
+  );
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
@@ -60,13 +74,13 @@ const Chat: React.FC = () => {
           {messages.map((msg, index) => (
             <div
               key={index}
-              className={`flex ${msg.user === username ? 'justify-end' : 'justify-start'}`}
+              className={`flex ${msg.user === username ? "justify-end" : "justify-start"}`}
             >
               <div
                 className={`max-w-[70%] rounded-lg p-3 ${
                   msg.user === username
-                    ? 'bg-indigo-600 text-white rounded-br-none'
-                    : 'bg-gray-200 text-gray-800 rounded-bl-none'
+                    ? "bg-indigo-600 text-white rounded-br-none"
+                    : "bg-gray-200 text-gray-800 rounded-bl-none"
                 }`}
               >
                 <div className="text-xs mb-1 opacity-70">{msg.user}</div>
