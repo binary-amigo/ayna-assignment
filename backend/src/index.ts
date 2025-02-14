@@ -13,7 +13,7 @@ module.exports = {
 
     const io = new Server(strapi.server.httpServer, {
       cors: {
-        origin: process.env.FRONTEND_URI,
+        origin: `${process.env.FRONTEND_URI}`,
         methods: ["GET", "POST"],
         allowedHeaders: ["my-custom-header"],
         credentials: true,
@@ -42,7 +42,7 @@ module.exports = {
       socket.on("sendMessage", async (data) => {
         try {
           const strapiData = { data: { user: data.user, message: data.message } };
-          await axios.post("http://localhost:1337/api/messages", strapiData);
+          await axios.post(`${process.env.FRONTEND_URI}/api/messages`, strapiData);
 
           io.to("group").emit("message", {
             user: data.user, // Fixed username issue
