@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { io } from "socket.io-client";
 import { Send, User } from "lucide-react";
 
-const socket = io("http://localhost:1337");
+const socket = io(import.meta.env.VITE_BACKEND_URI);
 
 const Chat: React.FC = () => {
   const [room, setRoom] = useState<string>("group");
