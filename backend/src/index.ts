@@ -13,7 +13,7 @@ module.exports = {
 
     const io = new Server(strapi.server.httpServer, {
       cors: {
-        origin: "http://localhost:5174",
+        origin: process.env.FRONTEND_URI,
         methods: ["GET", "POST"],
         allowedHeaders: ["my-custom-header"],
         credentials: true,
