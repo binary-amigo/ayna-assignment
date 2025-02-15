@@ -39,6 +39,7 @@ const Chat: React.FC = () => {
         user: username,
         message: message,
       });
+      console.log("Message sent:", message);
       setMessage("");
     }
   }, [message, username]);
